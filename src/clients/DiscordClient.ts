@@ -1,4 +1,4 @@
-import {Client, Intents} from 'discord.js'
+import {ActivityType, Client, GatewayIntentBits, Partials} from 'discord.js'
 
 import {getDatabase} from '../Application'
 import {ConfigHelper} from '../helper/ConfigHelper'
@@ -15,7 +15,7 @@ import {MetadataHelper} from "../helper/MetadataHelper";
 import {GCodeUploadHandler} from "../events/discord/GCodeUploadHandler";
 import {VerifyHandler} from "../events/discord/VerifyHandler";
 // @ts-ignore
-import {REST} from '@discordjs/rest'
+import {REST} from 'discord.js';
 import {ReconnectHandler} from "../events/discord/ReconnectHandler";
 
 let interactionHandler: InteractionHandler
@@ -44,27 +44,27 @@ export class DiscordClient {
 
         this.discordClient = new Client({
             intents: [
-                Intents.FLAGS.DIRECT_MESSAGES,
-                Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-                Intents.FLAGS.GUILDS,
-                Intents.FLAGS.GUILD_MESSAGES,
-                Intents.FLAGS.GUILD_WEBHOOKS,
-                Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-                Intents.FLAGS.GUILD_INTEGRATIONS
+                GatewayIntentBits.DirectMessages,
+                GatewayIntentBits.DirectMessageReactions,
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.GuildWebhooks,
+                GatewayIntentBits.GuildMessageReactions,
+                GatewayIntentBits.GuildIntegrations
             ],
             partials: [
-                'MESSAGE',
-                'CHANNEL',
-                'REACTION',
-                'GUILD_MEMBER',
-                'USER'
+                Partials.Message,
+                Partials.Channel,
+                Partials.Reaction,
+                Partials.GuildMember,
+                Partials.User
             ],
-            restRequestTimeout: this.config.getDiscordRequestTimeout() * 1000
+            // restRequestTimeout: this.config.getDiscordRequestTimeout() * 1000
         })
 
         logRegular('Connect to Discord...')
 
-        this.restClient = new REST({version: '10'}).setToken(this.config.getDiscordToken())
+        this.restClient = new REST().setToken(this.config.getDiscordToken())
 
         await this.discordClient.login(this.config.getDiscordToken())
 
@@ -94,10 +94,10 @@ export class DiscordClient {
 
         this.discordClient.user.setPresence({status: "idle"})
 
-        this.discordClient.user.setActivity(
-            this.localeHelper.getLocale().embeds.startup.activity,
-            {type: 'LISTENING'}
-        )
+        this.discordClient.user.setActivity({
+            name: this.localeHelper.getLocale().embeds.startup.activity,
+            type: ActivityType.Listening
+        })
 
         if (this.config.dumpCacheOnStart()) {
             await dump()
